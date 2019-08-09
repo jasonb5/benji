@@ -3,7 +3,10 @@ import logging
 import re
 import subprocess
 from json import JSONDecodeError
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any, Tuple
+from urllib.error import HTTPError
+
+import requests
 
 from benji.helpers.settings import benji_log_level
 
@@ -63,3 +66,23 @@ def subprocess_run(args: List[str],
             return result.stdout
     else:
         raise RuntimeError(f'{args[0]} invocation failed with return code {result.returncode} and output: {_one_line_stderr(result.stderr)}')
+
+
+def api_request(api_endpoint: str,
+                path: str,
+                method: str = 'GET',
+                body: Any = None,
+                params: Dict[str, Any] = None,
+                timeout: Tuple[int, int] = (2, 30)) -> Dict[str, Any]:
+    response = requests.request(method,
+                                f'{api_endpoint}{path}',
+                                headers={'Content-Type': 'application/json; charset=utf-8'},
+                                params=params,
+                                json=body,
+                                timeout=timeout)
+    response.raise_for_status()
+
+    if response.status_code not in (200, 201):
+        raise HTTPError(f'API call failed with status code {response.status_code}.', response=response)
+
+    return response.json()

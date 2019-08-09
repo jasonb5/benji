@@ -5,6 +5,7 @@ from typing import Dict, Any, Optional
 
 from blinker import signal
 
+from benji.helpers import settings
 from benji.helpers.settings import benji_log_level
 from benji.helpers.utils import subprocess_run
 
@@ -20,6 +21,12 @@ signal_snapshot_create_post_error = signal('snapshot_create_post_error')
 signal_backup_pre = signal('backup_pre')
 signal_backup_post_success = signal('on_backup_post_success')
 signal_backup_post_error = signal('on_backup_post_error')
+
+
+def cluster_fsid(cluster_name: str = 'ceph') -> str:
+    mon_dump = subprocess_run(['ceph', '--cluster', cluster_name, 'mon', 'dump', '--format=json'], decode_json=True)
+    assert isinstance(mon_dump, dict)
+    return mon_dump['fsid']
 
 
 def snapshot_create(*, volume: str, pool: str, image: str, snapshot: str, context: Any = None):
@@ -207,3 +214,5 @@ def backup(*,
                                         version_labels=version_labels,
                                         context=context,
                                         version=version)
+
+    return version
