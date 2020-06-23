@@ -27,6 +27,8 @@ spec:
     spec:
       serviceAccountName: {{ tuple . "" | include "benji.fullname" }}
       dnsPolicy: ClusterFirstWithHostNet
+      imagePullSecrets: 
+        {{ toYaml $.Values.benji.imagePullSecrets | nindent 8 }}
       containers:
         - name: benji
           image: "{{ .Values.benji.image.registry }}/{{ .Values.benji.image.repository }}:{{ .Values.benji.image.tag }}"

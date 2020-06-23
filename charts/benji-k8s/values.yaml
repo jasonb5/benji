@@ -7,6 +7,8 @@ benji:
     tag: latest
     pullPolicy: Always
 
+  imagePullSecrets: []
+
   resources: {}
 
   nodeSelector: {}
