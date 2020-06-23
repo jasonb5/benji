@@ -2,6 +2,7 @@
 import argparse
 import logging
 import random
+import re
 import string
 import sys
 import time
@@ -321,6 +322,21 @@ for pvc in pvcs:
         driver = pv.spec.flex_volume.driver
         if driver.startswith('ceph.rook.io/') and options.get('pool') and options.get('image'):
             pool, image = options['pool'], options['image']
+    elif (hasattr(pv.spec, 'csi') and hasattr(pv.spec.csi, 'volume_attributes') and
+            hasattr(pv.spec.csi, 'volume_handle')):
+        # Rook Ceph CSI PV
+        volume_attributes = pv.spec.csi.volume_attributes
+        volume_handle = pv.spec.csi.volume_handle
+
+        if 'pool' in volume_attributes:
+            pool = volume_attributes['pool']
+
+        # Match the UID for the image
+        match = re.search('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}', volume_handle)
+
+        # Check match and prefix
+        if match is not None:
+            image = 'csi-vol-{}'.format(match.group(0))
 
     if pool is None or image is None:
         continue
