@@ -1,5 +1,5 @@
-ARG BASE_TAG
-FROM elementalnet/benji:${BASE_TAG}
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 ARG VCS_REF
 ARG VCS_URL
@@ -14,7 +14,7 @@ LABEL org.label-schema.schema-version="1.0" \
       org.label-schema.version="$VERSION" \
       org.label-schema.url="https://benji-backup.me/"
 
-RUN curl -o /usr/bin/kubectl -sSL https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
+RUN curl -o /usr/bin/kubectl -k -sSL https://storage.googleapis.com/kubernetes-release/release/$(curl -k -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
 	chmod a+x /usr/bin/kubectl
 
 COPY images/benji-k8s/bin/ $VENV_DIR/bin/
